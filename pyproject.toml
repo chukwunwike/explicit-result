@@ -31,6 +31,8 @@ dev = [
     "pytest-asyncio",
     "mypy",
     "pyright",
+    "hypothesis",
+    "typing_extensions",
 ]
 
 [tool.pytest.ini_options]
