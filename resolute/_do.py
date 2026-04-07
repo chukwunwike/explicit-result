@@ -45,6 +45,7 @@ For Option types, use ``@do_option()``:
 
 from __future__ import annotations
 
+from types import GeneratorType
 from typing import (
     Any,
     Callable,
@@ -62,8 +63,8 @@ U = TypeVar("U")
 
 
 def do() -> Callable[
-    [Callable[..., Generator[Result[Any, Any], Any, Any]]],
-    Callable[..., Result[Any, Any]],
+    [Callable[..., Generator[Result[Any, E], Any, T]]],
+    Callable[..., Result[T, E]],
 ]:
     """
     Decorator that enables generator-based do-notation for Results.
@@ -102,11 +103,14 @@ def do() -> Callable[
         conditional(5)   # Ok(5)
     """
     def decorator(
-        gen_func: Callable[..., Generator[Result[Any, Any], Any, Any]],
-    ) -> Callable[..., Result[Any, Any]]:
+        gen_func: Callable[..., Generator[Result[Any, E], Any, T]],
+    ) -> Callable[..., Result[T, E]]:
 
-        def wrapper(*args: Any, **kwargs: Any) -> Result[Any, Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Result[T, E]:
             gen = gen_func(*args, **kwargs)
+            # If the function returned early (no yield), it's not a generator
+            if not isinstance(gen, GeneratorType):
+                return _finalize_result(gen)
             try:
                 result = next(gen)
                 while True:
@@ -146,8 +150,8 @@ def _finalize_result(return_value: Any) -> Result[Any, Any]:
 # --------------------------------------------------------------------------- #
 
 def do_option() -> Callable[
-    [Callable[..., Generator[Option[Any], Any, Any]]],
-    Callable[..., Option[Any]],
+    [Callable[..., Generator[Option[Any], Any, T]]],
+    Callable[..., Option[T]],
 ]:
     """
     Decorator that enables generator-based do-notation for Options.
@@ -178,11 +182,14 @@ def do_option() -> Callable[
         conditional(42)    # Some(42)
     """
     def decorator(
-        gen_func: Callable[..., Generator[Option[Any], Any, Any]],
-    ) -> Callable[..., Option[Any]]:
+        gen_func: Callable[..., Generator[Option[Any], Any, T]],
+    ) -> Callable[..., Option[T]]:
 
-        def wrapper(*args: Any, **kwargs: Any) -> Option[Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Option[T]:
             gen = gen_func(*args, **kwargs)
+            # If the function returned early (no yield), it's not a generator
+            if not isinstance(gen, GeneratorType):
+                return _finalize_option(gen)
             try:
                 option = next(gen)
                 while True:

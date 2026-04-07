@@ -302,3 +302,128 @@ class TestDoNotation:
         err = result.unwrap_err()
         assert isinstance(err, ContextError)
         assert err.message == "startup"
+
+
+# ========================================================================
+# 5. EDGE CASE: return Err(...) inside @do() must NOT double-wrap
+# ========================================================================
+
+class TestDoNotationEdgeCases:
+    """Proves the double-wrap fix works: return Err(...) stays Err."""
+
+    def test_return_err_not_double_wrapped(self):
+        """The original bug: return Err('x') became Ok(Err('x'))."""
+        @do()
+        def check(value: int):
+            if value < 0:
+                return Err("negative")
+            return value
+
+        assert check(-1) == Err("negative")  # NOT Ok(Err("negative"))
+        assert check(5) == Ok(5)
+
+    def test_return_ok_explicitly(self):
+        """return Ok(x) should not become Ok(Ok(x))."""
+        @do()
+        def explicit():
+            x = yield Ok(10)
+            return Ok(x * 2)
+
+        assert explicit() == Ok(20)  # NOT Ok(Ok(20))
+
+    def test_return_err_after_yields(self):
+        """Conditional Err after successful yields."""
+        @do()
+        def pipeline(threshold: int):
+            a = yield Ok(10)
+            b = yield Ok(20)
+            total = a + b
+            if total > threshold:
+                return Err(f"total {total} exceeds {threshold}")
+            return total
+
+        assert pipeline(50) == Ok(30)
+        assert pipeline(25) == Err("total 30 exceeds 25")
+
+    def test_return_none_becomes_ok_none(self):
+        """return None should become Ok(None), not an error."""
+        @do()
+        def returns_none():
+            yield Ok(1)
+            return None
+
+        assert returns_none() == Ok(None)
+
+
+# ========================================================================
+# 6. DO-NOTATION FOR OPTION (do_option)
+# ========================================================================
+
+class TestDoOption:
+    """Tests for @do_option() — same pattern but for Some/Nothing."""
+
+    def test_do_option_success_chain(self):
+        @do_option()
+        def lookup():
+            x = yield Some(10)
+            y = yield Some(20)
+            return x + y
+
+        assert lookup() == Some(30)
+
+    def test_do_option_short_circuits_on_nothing(self):
+        @do_option()
+        def lookup():
+            x = yield Some(10)
+            y = yield Nothing
+            return x + y  # never reached
+
+        assert lookup().is_nothing()
+
+    def test_do_option_with_real_lookups(self):
+        users = {1: "Archy", 2: "Chuks"}
+        emails = {"Archy": "archy@test.com"}
+
+        def find_user(uid):
+            return Some(users[uid]) if uid in users else Nothing
+
+        def find_email(name):
+            return Some(emails[name]) if name in emails else Nothing
+
+        @do_option()
+        def get_email(uid):
+            name = yield find_user(uid)
+            email = yield find_email(name)
+            return email
+
+        assert get_email(1) == Some("archy@test.com")
+        assert get_email(2).is_nothing()  # Chuks has no email
+        assert get_email(999).is_nothing()  # user doesn't exist
+
+    def test_do_option_return_nothing_explicitly(self):
+        """return Nothing inside do_option should NOT become Some(Nothing)."""
+        @do_option()
+        def conditional(value):
+            if value is None:
+                return Nothing
+            return value
+
+        assert conditional(None).is_nothing()
+        assert conditional(42) == Some(42)
+
+    def test_do_option_return_some_explicitly(self):
+        """return Some(x) should not become Some(Some(x))."""
+        @do_option()
+        def explicit():
+            x = yield Some(10)
+            return Some(x * 2)
+
+        assert explicit() == Some(20)  # NOT Some(Some(20))
+
+    def test_do_option_preserves_function_name(self):
+        @do_option()
+        def my_lookup():
+            x = yield Some(1)
+            return x
+
+        assert my_lookup.__name__ == "my_lookup"
