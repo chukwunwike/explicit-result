@@ -649,6 +649,9 @@ It also means `Nothing == Nothing` is always True, and `Nothing is Nothing` is a
 
 When you have long chains of `Result` operations, `.and_then` can sometimes become deeply nested or require passing multiple variables through closures. `resolute` provides a generator-based "do-notation" via the `@do()` and `@do_option()` decorators to write flat, imperatively-structured code.
 
+Unlike some other libraries, `resolute`'s do-notation **fully supports branching logic** (if/else), loops, and early returns, as it leverages standard Python generators.
+
+
 ### Result with @do
 
 Yield a `Result` to unwrap its value. If it's an `Err`, the generator immediately short-circuits and returns that `Err`.
@@ -747,7 +750,24 @@ The above exception was the direct cause of the following exception:
 
 You can also use `.with_context(lambda e: ...)` if the context message is expensive to compute, as it will only execute if the `Result` is `Err`.
 
-Type note: `.context()` changes the error type from `E` to `ContextError`. If you need to access the original error downstream, use `.unwrap_err().cause`. If you want to preserve the original error type, use `.map_err()` with a custom wrapper instead.
+Type note: `.context()` changes the error type from `E` to `ContextError`.
+
+If you need to access the original error downstream, you can use the **`.root_cause()`** helper on the `Result` (returns an `Option`) or the **`.root_cause`** property on the `ContextError`.
+
+```python
+# On Result:
+orig = result.root_cause().unwrap_or("no error")
+
+# On ContextError:
+try:
+    result.unwrap()
+except ContextError as e:
+    print(f"Failed at: {e.message}")
+    print(f"Original cause: {e.root_cause}")
+```
+
+If you want to preserve the original error type entirely, use `.map_err()` with a custom wrapper instead.
+
 
 ---
 

@@ -352,6 +352,24 @@ class Result(Generic[T, E]):
             return Err(ContextError(f(), self.unwrap_err()))
         return self
 
+    def root_cause(self) -> "Option[Any]":
+        """
+        If this is Err and the error is a ContextError, return its root cause.
+        If it's a normal Err, return the error value.
+        If it's Ok, return Nothing.
+
+            Err("bad").root_cause()              # Some("bad")
+            Err(ContextError("m", "c")).root_cause() # Some("c")
+            Ok(1).root_cause()                   # Nothing
+        """
+        from ._option import Some, _Nothing
+        if isinstance(self, Err):
+            err = self.unwrap_err()
+            if hasattr(err, "root_cause"):
+                return Some(err.root_cause) # type: ignore[attr-defined]
+            return Some(err)
+        return _Nothing
+
     # ------------------------------------------------------------------ #
     # Iteration support
     # ------------------------------------------------------------------ #

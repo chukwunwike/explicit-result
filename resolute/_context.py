@@ -34,6 +34,16 @@ class ContextError(Exception):
     def __repr__(self) -> str:
         return f"ContextError({self.message!r}, cause={self.cause!r})"
 
+    @property
+    def root_cause(self) -> object:
+        """
+        The original cause of this error, unwrapped from all ContextErrors.
+        """
+        current = self.cause
+        while isinstance(current, ContextError):
+            current = current.cause
+        return current
+
     def chain(self) -> list[object]:
         """
         Walk the full error chain and return a list of all causes.
