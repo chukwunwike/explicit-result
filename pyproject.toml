@@ -65,10 +65,6 @@ fail_under = 95
 [tool.mypy]
 strict = true
 
-[[tool.mypy.overrides]]
-module = "tests.*"
-ignore_errors = true
-
 
 [tool.hatch.build.targets.wheel]
 packages = ["resolute"]

@@ -30,6 +30,7 @@ from ._exceptions import UnwrapError
 
 if TYPE_CHECKING:
     from ._option import Option
+    from ._context import ContextError
 
 T = TypeVar("T")
 E = TypeVar("E")
@@ -349,7 +350,7 @@ class Result(Generic[T, E]):
         from ._context import ContextError
         if isinstance(self, Err):
             return Err(ContextError(message, self.unwrap_err()))
-        return self
+        return cast("Result[T, ContextError]", self)
 
     def with_context(self, f: Callable[[], str]) -> "Result[T, ContextError]":
         """
@@ -362,7 +363,7 @@ class Result(Generic[T, E]):
         from ._context import ContextError
         if isinstance(self, Err):
             return Err(ContextError(f(), self.unwrap_err()))
-        return self
+        return cast("Result[T, ContextError]", self)
 
     def root_cause(self) -> "Option[Any]":
         """
@@ -378,7 +379,7 @@ class Result(Generic[T, E]):
         if isinstance(self, Err):
             err = self.unwrap_err()
             if hasattr(err, "root_cause"):
-                return Some(err.root_cause) # type: ignore[attr-defined]
+                return Some(err.root_cause)
             return Some(err)
         return _Nothing
 
