@@ -881,7 +881,10 @@ r: <span class="type">Result</span>[<span class="type">int</span>, <span class="
 
 <span class="cm"># Errors can be any type</span>
 r: <span class="type">Result</span>[<span class="type">User</span>, <span class="type">DatabaseError</span>] = <span class="err">Err</span>(<span class="type">DatabaseError</span>(<span class="str">"connection refused"</span>))
-r: <span class="type">Result</span>[<span class="type">str</span>, <span class="type">list</span>[<span class="type">str</span>]]       = <span class="err">Err</span>([<span class="str">"field required"</span>, <span class="str">"invalid email"</span>])</pre>
+r: <span class="type">Result</span>[<span class="type">str</span>, <span class="type">list</span>[<span class="type">str</span>]]       = <span class="err">Err</span>([<span class="str">"field required"</span>, <span class="str">"invalid email"</span>])
+
+<span class="cm"># Result.from_optional(value, error) — convert nullable</span>
+r = <span class="type">Result</span>.from_optional(os.environ.get(<span class="str">"KEY"</span>), <span class="str">"Missing env var"</span>)</pre>
       </section>
 
       <!-- OPTION TYPE -->
