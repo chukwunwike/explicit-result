@@ -19,6 +19,8 @@ from typing import (
     TYPE_CHECKING,
     overload,
     cast,
+    get_args,
+    get_origin,
 )
 
 __all__ = ["Result", "Ok", "Err"]
@@ -411,6 +413,44 @@ class Result(Generic[T, E]):
     def __bool__(self) -> bool:
         """Ok is truthy, Err is falsy. Allows: if result: ..."""
         return isinstance(self, Ok)
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source: Any, handler: Any
+    ) -> Any:
+        """Pydantic v2 core schema implementation."""
+        from pydantic_core import core_schema
+
+        args = get_args(source)
+        if len(args) == 2:
+            ok_type, err_type = args
+        else:
+            ok_type, err_type = Any, Any
+
+        def validate(value: Any) -> Result[Any, Any]:
+            if isinstance(value, Result):
+                return value
+            if isinstance(value, dict):
+                if "ok" in value:
+                    return Ok(value["ok"])
+                if "err" in value:
+                    return Err(value["err"])
+            # Fallback: try to validate as Ok
+            return Ok(value)
+
+        return core_schema.no_info_after_validator_function(
+            validate,
+            core_schema.union_schema([
+                core_schema.dict_schema(
+                    keys_schema=core_schema.str_schema(),
+                    values_schema=core_schema.any_schema(),
+                ),
+                handler(ok_type),
+            ]),
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda v: {"ok": v.unwrap()} if v.is_ok() else {"err": v.unwrap_err()}
+            ),
+        )
 
 
 

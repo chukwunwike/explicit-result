@@ -17,6 +17,8 @@ from typing import (
     TypeVar,
     TYPE_CHECKING,
     cast,
+    get_args,
+    get_origin,
 )
 
 __all__ = ["Option", "Some", "Nothing"]
@@ -315,6 +317,32 @@ class Option(Generic[T]):
     def __bool__(self) -> bool:
         """Some is truthy, Nothing is falsy."""
         return isinstance(self, Some)
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source: Any, handler: Any
+    ) -> Any:
+        """Pydantic v2 core schema implementation."""
+        from pydantic_core import core_schema
+
+        args = get_args(source)
+        # Handle both Option and Option[T]
+        inner_type = args[0] if args else Any
+
+        def validate(value: Any) -> Option[Any]:
+            if value is None:
+                return Nothing
+            if isinstance(value, Option):
+                return value
+            return Some(value)
+
+        return core_schema.no_info_after_validator_function(
+            validate,
+            core_schema.nullable_schema(handler(inner_type)),
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda v: v.unwrap() if v.is_some() else None
+            ),
+        )
 
 
 # --------------------------------------------------------------------------- #
