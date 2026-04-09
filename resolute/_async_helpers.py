@@ -31,6 +31,7 @@ U = TypeVar("U")
 async def from_awaitable(
     aw: Awaitable[T],
     catch: Union[Type[Exception], Tuple[Type[Exception], ...]] = Exception,
+    allow_broad: bool = False,
 ) -> Result[T, Exception]:
     """
     Await an awaitable and wrap the result in Ok/Err.
@@ -41,14 +42,22 @@ async def from_awaitable(
     Arguments:
         aw: Any awaitable (coroutine, Task, Future).
         catch: Exception type(s) to catch. Defaults to Exception.
+        allow_broad: If True, suppress the warning when catching BaseException/Exception.
 
     Returns:
         Ok(value) on success, Err(exception) on caught failure.
     """
+    from ._decorators import _validate_catch, _validate_catch_no_broad_warning
+    
+    if not allow_broad:
+        _catch = _validate_catch_no_broad_warning(catch)
+    else:
+        _catch = _validate_catch(catch)
+
     try:
         value = await aw
         return Ok(value)
-    except catch as exc:
+    except _catch as exc:
         return Err(exc)
 
 
@@ -121,3 +130,47 @@ async def and_then_option_async(
     if isinstance(opt, Some):
         return await f(opt.value)
     return opt  # type: ignore[return-value]
+
+
+F = TypeVar("F")
+
+async def map_err_async(
+    result: Result[T, E],
+    f: Callable[[E], Awaitable[F]],
+) -> Result[T, F]:
+    """
+    Apply an async function to the Err value of a Result.
+    """
+    if isinstance(result, Err):
+        err_val = await f(result.error)
+        return Err(err_val)
+    return result  # type: ignore[return-value]
+
+
+async def or_else_async(
+    result: Result[T, E],
+    f: Callable[[E], Awaitable[Result[T, F]]],
+) -> Result[T, F]:
+    """
+    Chain an async recovery function on the Err value.
+    If the result is Ok, the function is never called.
+    """
+    if isinstance(result, Err):
+        return await f(result.error)
+    return result  # type: ignore[return-value]
+
+
+async def or_else_option_async(
+    opt: Option[T],
+    f: Callable[[], Awaitable[Option[T]]],
+) -> Option[T]:
+    """
+    Chain an async Option-returning function on the Nothing value.
+    If the option is Some, the function is never called.
+    """
+    if isinstance(opt, Some):
+        return opt
+    return await f()
+
+
+

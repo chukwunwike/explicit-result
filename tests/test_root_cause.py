@@ -13,16 +13,16 @@ def test_result_root_cause_with_context():
     base = ValueError("original")
     res = Err(base).context("wrapper")
     
-    root = res.root_cause()
+    root = res.root_cause
     assert root == Some(base)
 
 def test_result_root_cause_simple_err():
     res = Err("static error")
-    assert res.root_cause() == Some("static error")
+    assert res.root_cause == Some("static error")
 
 def test_result_root_cause_ok():
     res = Ok(42)
-    assert res.root_cause() is Nothing
+    assert res.root_cause is Nothing
 
 def test_result_from_optional():
     assert Result.from_optional(10, "err") == Ok(10)

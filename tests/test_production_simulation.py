@@ -190,7 +190,7 @@ def test_distributed_saga_rollback_and_context():
     assert res_a.is_err()
     assert isinstance(res_a.unwrap_err(), ContextError)
     assert "Failed to reserve inventory" in str(res_a.unwrap_err())
-    assert isinstance(res_a.root_cause().unwrap(), InsufficientInventory)
+    assert isinstance(res_a.root_cause.unwrap(), InsufficientInventory)
 
     # Scenario B: Card declines (triggers rollback, preserves context)
     res_b = process_checkout_saga("In Stock Item", 500.0)
@@ -199,7 +199,7 @@ def test_distributed_saga_rollback_and_context():
     
     assert isinstance(err_b, ContextError)
     assert "Failed to charge for In Stock Item" in str(err_b)
-    assert isinstance(res_b.root_cause().unwrap(), CreditCardDeclined)
+    assert isinstance(res_b.root_cause.unwrap(), CreditCardDeclined)
     
     # We can walk the exact chain of failure for observability/logging
     causal_chain = err_b.chain()

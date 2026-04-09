@@ -430,6 +430,7 @@ class Result(Generic[T, E]):
             return Err(ContextError(f(), self.unwrap_err()))
         return cast("Result[T, ContextError]", self)
 
+    @property
     def root_cause(self) -> "Option[Any]":
         """
         If this is Err and the error is a ContextError, return its root cause.
@@ -470,15 +471,12 @@ class Result(Generic[T, E]):
     def __repr__(self) -> str:
         raise NotImplementedError  # implemented by Ok and Err
 
-    def __eq__(self, other: object) -> bool:
-        raise NotImplementedError
-
-    def __hash__(self) -> int:
-        raise NotImplementedError
-
     def __bool__(self) -> bool:
-        """Ok is truthy, Err is falsy. Allows: if result: ..."""
-        return isinstance(self, Ok)
+        """Prevent boolean evaluation to avoid hidden truthiness bugs."""
+        raise RuntimeError(
+            "Resolute types do not support implicit boolean truthiness. "
+            "Use .is_ok(), .is_err(), or pattern matching instead."
+        )
 
     @classmethod
     def __get_pydantic_core_schema__(
@@ -528,7 +526,7 @@ class Ok(Result[T, E]):
     """
 
     __slots__ = ("_value",)
-    __match_args__ = ("_value",)  # enables: case Ok(value):
+    __match_args__ = ("value",)  # enables: case Ok(value=x):
 
     def __init__(self, value: T) -> None:
         self._value = value
@@ -547,9 +545,6 @@ class Ok(Result[T, E]):
     def __hash__(self) -> int:
         return hash(("Ok", self._value))
 
-    def __bool__(self) -> bool:
-        return True
-
 
 class Err(Result[T, E]):
     """
@@ -561,7 +556,7 @@ class Err(Result[T, E]):
     """
 
     __slots__ = ("_error",)
-    __match_args__ = ("_error",)  # enables: case Err(error):
+    __match_args__ = ("error",)  # enables: case Err(error=x):
 
     def __init__(self, error: E) -> None:
         self._error = error
@@ -579,6 +574,3 @@ class Err(Result[T, E]):
 
     def __hash__(self) -> int:
         return hash(("Err", self._error))
-
-    def __bool__(self) -> bool:
-        return False

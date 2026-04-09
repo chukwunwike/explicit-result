@@ -340,15 +340,12 @@ class Option(Generic[T]):
     def __repr__(self) -> str:
         raise NotImplementedError
 
-    def __eq__(self, other: object) -> bool:
-        raise NotImplementedError
-
-    def __hash__(self) -> int:
-        raise NotImplementedError
-
     def __bool__(self) -> bool:
-        """Some is truthy, Nothing is falsy."""
-        return isinstance(self, Some)
+        """Prevent boolean evaluation to avoid hidden truthiness bugs."""
+        raise RuntimeError(
+            "Resolute types do not support implicit boolean truthiness. "
+            "Use .is_some(), .is_nothing(), or pattern matching instead."
+        )
 
     @classmethod
     def __get_pydantic_core_schema__(
@@ -390,7 +387,7 @@ class Some(Option[T]):
     """
 
     __slots__ = ("_value",)
-    __match_args__ = ("_value",)  # enables: case Some(value):
+    __match_args__ = ("value",)  # enables: case Some(value=x):
 
     def __init__(self, value: T) -> None:
         if value is None:
@@ -416,9 +413,6 @@ class Some(Option[T]):
     def __hash__(self) -> int:
         return hash(("Some", self._value))
 
-    def __bool__(self) -> bool:
-        return True
-
 
 class _NothingType(Option[T]):
     """
@@ -436,6 +430,12 @@ class _NothingType(Option[T]):
             cls._instance = super().__new__(cls)
         return cls._instance
 
+    def __copy__(self) -> _NothingType[T]:
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> _NothingType[T]:
+        return self
+
     def __repr__(self) -> str:
         return "Nothing"
 
@@ -444,9 +444,6 @@ class _NothingType(Option[T]):
 
     def __hash__(self) -> int:
         return hash("Nothing")
-
-    def __bool__(self) -> bool:
-        return False
 
 
 # The singleton Nothing instance — import and use this directly

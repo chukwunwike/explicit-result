@@ -122,6 +122,9 @@ def safe(
     """
     Decorator that wraps a function's exceptions into a Result type.
     """
+    if func is not None and not callable(func):
+        raise TypeError("The @safe decorator must be applied to a callable. Did you mean @safe(catch=Exception)?")
+
     if allow_broad:
         # Still validate forbidden types (KeyboardInterrupt, SystemExit, etc.)
         # but skip the broad-catch warning
@@ -160,6 +163,9 @@ def safe_async(
     """
     Async version of @safe.
     """
+    if func is not None and not callable(func):
+        raise TypeError("The @safe_async decorator must be applied to a callable. Did you mean @safe_async(catch=Exception)?")
+
     if allow_broad:
         _catch = _validate_catch_no_broad_warning(catch)
     else:

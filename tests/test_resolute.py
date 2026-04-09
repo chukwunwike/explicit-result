@@ -247,13 +247,11 @@ class TestResultDunder:
         s = {Err("a"), Err("a"), Err("b")}
         assert len(s) == 2
 
-    def test_ok_bool_truthy(self):
-        assert bool(Ok(1)) is True
-        assert bool(Ok(0)) is True  # 0 is Ok, not falsy
-        assert bool(Ok(None)) is True
-
-    def test_err_bool_falsy(self):
-        assert bool(Err("x")) is False
+    def test_result_bool_raises(self):
+        with pytest.raises(RuntimeError, match="truthiness"):
+            bool(Ok(1))
+        with pytest.raises(RuntimeError, match="truthiness"):
+            bool(Err("x"))
 
     def test_ok_iteration(self):
         assert list(Ok(5)) == [5]
@@ -470,13 +468,11 @@ class TestOptionDunder:
         from resolute._option import _NothingType
         assert _NothingType() is Nothing
 
-    def test_some_bool_truthy(self):
-        assert bool(Some(1)) is True
-        assert bool(Some(0)) is True
-        assert bool(Some(None)) is True
-
-    def test_nothing_bool_falsy(self):
-        assert bool(Nothing) is False
+    def test_option_bool_raises(self):
+        with pytest.raises(RuntimeError, match="truthiness"):
+            bool(Some(1))
+        with pytest.raises(RuntimeError, match="truthiness"):
+            bool(Nothing)
 
     def test_some_iteration(self):
         assert list(Some(5)) == [5]
@@ -810,18 +806,9 @@ class TestIntegrationPatterns:
         cache = {Ok("key"): "stored value"}
         assert cache[Ok("key")] == "stored value"
 
-    def test_bool_in_if_statement(self):
-        """Ok is truthy, Err is falsy — clean if-result: usage."""
+    def test_bool_raises_in_if_statement(self):
+        """Implicit boolean checks in `if` raise RuntimeError."""
         result = Ok("data")
-        if result:
-            value = result.unwrap()
-        else:
-            value = "default"
-        assert value == "data"
-
-        result = Err("failed")
-        if result:
-            value = result.unwrap()
-        else:
-            value = "default"
-        assert value == "default"
+        with pytest.raises(RuntimeError, match="truthiness"):
+            if result:
+                pass
