@@ -956,10 +956,9 @@ o.is_nothing()  <span class="cm"># False</span>
 Nothing.is_some()     <span class="cm"># False</span>
 Nothing.is_nothing()  <span class="cm"># True</span>
 
-<span class="cm"># Boolean — Some is truthy, Nothing is falsy</span>
-<span class="kw">if</span> find_user(<span class="num">1</span>):
-    <span class="cm"># some user was found</span>
-    ...</pre>
+<span class="cm"># NOTE: Boolean evaluation is DISABLED in v0.3.1</span>
+<span class="cm"># if result:  # Raises RuntimeError</span>
+</pre>
       </section>
 
       <!-- EXTRACTING -->
@@ -1169,10 +1168,23 @@ result = <span class="fn">read_config</span>()
           property on the <code>ContextError</code>.</p>
 
 
-        <h4>.with_context(f)</h4>
-        <p>Like <code>.context()</code>, but computes the message lazily by calling <code>f()</code> ONLY if the result
-          is an <code>Err</code>.</p>
         <pre>result = <span class="fn">read_file</span>(path).with_context(<span class="kw">lambda</span>: <span class="str">f"Failed to read from {path}"</span>)</pre>
+
+        <h3>Diagnostic Visibility</h3>
+        <p>Resolute v0.3.1 features "Hybrid Representation" for errors, providing immediate diagnostic value.</p>
+        <div class="two-col">
+          <div>
+            <h4>1. Verbose View (str)</h4>
+            <p><code>print(result)</code> includes the <strong>full stack trace</strong> from the error origin.</p>
+          </div>
+          <div>
+            <h4>2. Concise View (repr)</h4>
+            <p><code>repr(result)</code> provides a compact marker with <strong>file and line number</strong>.</p>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: #666; margin-top: 1rem;">
+          Control verbosity via <code>RESOLUTE_VERBOSE_ERROR</code> environment variable (1=Enabled, 0=Disabled).
+        </p>
       </section>
 
       <!-- @safe -->
@@ -1247,6 +1259,8 @@ description = (
           provides syntactic sugar similar to Haskell's <code>do</code> or Rust's <code>?</code> operator.</p>
         <p>Unlike some other libraries, resolute <strong>fully supports branching logic</strong> (if/else), loops, and
           early returns inside the generator, as it leverages standard Python generator semantics.</p>
+        <p><strong>Safety Guard (v0.3.1)</strong>: Using <code>yield</code> without the decorator issues a 
+          <code>RuntimeWarning</code> to prevent leaked generators.</p>
 
 
         <pre><span class="kw">from</span> resolute <span class="kw">import</span> do, Ok, Err, Result
@@ -1579,6 +1593,18 @@ errors = <span class="fn">collect_all</span>([
             </tr>
             <tr>
               <td>Error context chains</td>
+              <td><span class="yes">✓</span></td>
+              <td><span class="no">✗</span></td>
+              <td><span class="no">✗</span></td>
+            </tr>
+            <tr>
+              <td>Implicit Boolean Safety</td>
+              <td><span class="yes">✓</span></td>
+              <td><span class="no">✗</span></td>
+              <td><span class="no">✗</span></td>
+            </tr>
+            <tr>
+              <td>Traceback Diagnostics</td>
               <td><span class="yes">✓</span></td>
               <td><span class="no">✗</span></td>
               <td><span class="no">✗</span></td>

@@ -10,6 +10,10 @@ visible in the type system and eliminating surprise exceptions.
 
 from __future__ import annotations
 
+import os
+import traceback
+import inspect
+import warnings
 from typing import (
     Any,
     Callable,
@@ -437,9 +441,11 @@ class Result(Generic[T, E]):
         If it's a normal Err, return the error value.
         If it's Ok, return Nothing.
 
-            Err("bad").root_cause()              # Some("bad")
-            Err(ContextError("m", "c")).root_cause() # Some("c")
-            Ok(1).root_cause()                   # Nothing
+        This is a property, not a method:
+
+            Err("bad").root_cause              # Some("bad")
+            Err(ContextError("m", "c")).root_cause  # Some("c")
+            Ok(1).root_cause                   # Nothing
         """
         from ._option import Some, _Nothing
         if isinstance(self, Err):
@@ -530,6 +536,8 @@ class Ok(Result[T, E]):
 
     def __init__(self, value: T) -> None:
         self._value = value
+        from ._context_vars import _check_do_context
+        _check_do_context(self, "@do")
 
     @property
     def value(self) -> T:
@@ -560,6 +568,8 @@ class Err(Result[T, E]):
 
     def __init__(self, error: E) -> None:
         self._error = error
+        from ._context_vars import _check_do_context
+        _check_do_context(self, "@do")
 
     @property
     def error(self) -> E:
@@ -567,7 +577,29 @@ class Err(Result[T, E]):
         return self._error
 
     def __repr__(self) -> str:
+        if isinstance(self._error, BaseException):
+            tb = self._error.__traceback__
+            if tb:
+                # Get the last frame (where it actually crashed)
+                filename, line, func, _ = traceback.extract_tb(tb)[-1]
+                basename = os.path.basename(filename)
+                return f"Err({type(self._error).__name__}: {self._error} at {basename}:{line})"
+            return f"Err({self._error!r})"
         return f"Err({self._error!r})"
+
+    def __str__(self) -> str:
+        if isinstance(self._error, BaseException):
+            tb = self._error.__traceback__
+            if tb:
+                from ._settings import settings
+                if settings.verbose_error:
+                    # Format full traceback
+                    trace = "".join(traceback.format_exception(type(self._error), self._error, tb))
+                    return f"Err variant carrying an exception:\n{trace}"
+                else:
+                    return f"Err({type(self._error).__name__}: {self._error})"
+            return f"Err({self._error})"
+        return f"Err({self._error})"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Err) and self._error == other._error

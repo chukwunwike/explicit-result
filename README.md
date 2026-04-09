@@ -45,6 +45,7 @@ The signature `Result[float, str]` is a contract: *"I will give you either a flo
   - [Why not exceptions?](#why-not-exceptions)
   - [Why not returning None?](#why-not-returning-none)
   - [The resolute philosophy](#the-resolute-philosophy)
+- [Safety & Reliability (v0.3.1)](#safety--reliability-v031)
 - [Result\[T, E\]](#resultt-e)
   - [Creating Results](#creating-results)
   - [Checking the variant](#checking-the-variant)
@@ -466,20 +467,24 @@ This is exhaustive — if you handle both `Ok` and `Err`, the type checker knows
 
 ---
 
-### Boolean and iteration
+### Explicit Checks (Breaking in v0.3.1)
 
-`Ok` is truthy. `Err` is falsy. This lets you use results in simple `if` statements:
+In v0.3.1, `Result` and `Option` **no longer support implicit boolean evaluation**. Using `if result:` will raise a `RuntimeError`. This prevents subtle bugs where a container carrying a falsy value (like `Ok(False)`) is misinterpreted.
+
+You must use explicit methods:
 
 ```python
 result = parse_int("42")
 
-if result:
+# REQUIRED: Use .is_ok() or .is_err()
+if result.is_ok():
     value = result.unwrap()
 else:
     value = 0
 ```
 
-`Result` also supports iteration. `Ok(v)` yields `v` once. `Err` yields nothing. This is useful for flattening a list of results:
+`Result` still supports iteration. `Ok(v)` yields `v` once. `Err` yields nothing. 
+This is useful for flattening a list of results:
 
 ```python
 results = [Ok(1), Err("skip"), Ok(3), Ok(4), Err("skip")]
@@ -656,9 +661,10 @@ It also means `Nothing == Nothing` is always True, and `Nothing is Nothing` is a
 
 ## Do-Notation
 
-When you have long chains of `Result` operations, `.and_then` can sometimes become deeply nested or require passing multiple variables through closures. `resolute` provides a generator-based "do-notation" via the `@do()` and `@do_option()` decorators to write flat, imperatively-structured code.
-
 Unlike some other libraries, `resolute`'s do-notation **fully supports branching logic** (if/else), loops, and early returns, as it leverages standard Python generators.
+
+> [!IMPORTANT]
+> **Safety Guard (v0.3.1)**: If you use `yield` inside a function but forget the `@do` or `@do_option` decorator, Resolute will issue a `RuntimeWarning` at runtime to prevent you from accidentally returning a silent generator object.
 
 
 ### Result with @do
@@ -763,7 +769,6 @@ Type note: `.context()` changes the error type from `E` to `ContextError`.
 
 If you need to access the original error downstream, you can use the **`.root_cause()`** helper on the `Result` (returns an `Option`) or the **`.root_cause`** property on the `ContextError`.
 
-```python
 # On Result:
 orig = result.root_cause().unwrap_or("no error")
 
@@ -775,7 +780,36 @@ except ContextError as e:
     print(f"Original cause: {e.root_cause}")
 ```
 
-If you want to preserve the original error type entirely, use `.map_err()` with a custom wrapper instead.
+---
+
+## Diagnostic Visibility
+
+Resolute v0.3.1 introduces "Hybrid Representation" for errors. You get immediate diagnostic depth without any boilerplate.
+
+### 1. The Verbose Default (`print`)
+When you `print(result)` or convert it to a string, Resolute extracts the **full stack trace** from where the error originated.
+
+```python
+# Output if result is Err:
+Err(ValueError: invalid input)
+Traceback (most recent call last):
+  File "logic.py", line 42, in safe_func
+    return 1 / 0
+ZeroDivisionError: division by zero
+```
+
+### 2. The Concise Debug View (`repr`)
+When viewing results in a debugger, list, or log, you get a compact summary with the **exact file and line**.
+
+```python
+# Output of repr(result):
+Err(ZeroDivisionError: division by zero at logic.py:42)
+```
+
+### Configuration
+You can control traceback verbosity via the `RESOLUTE_VERBOSE_ERROR` environment variable:
+- `1` (Default): Enable full tracebacks in `str()`.
+- `0`: Disable tracebacks (Concise mode only).
 
 
 ---

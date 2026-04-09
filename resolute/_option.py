@@ -398,6 +398,8 @@ class Some(Option[T]):
                 stacklevel=2,
             )
         self._value = value
+        from ._context_vars import _check_do_context
+        _check_do_context(self, "@do_option")
 
     @property
     def value(self) -> T:
@@ -429,6 +431,7 @@ class _NothingType(Option[T]):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
+
 
     def __copy__(self) -> _NothingType[T]:
         return self

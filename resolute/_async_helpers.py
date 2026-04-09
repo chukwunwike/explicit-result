@@ -47,10 +47,10 @@ async def from_awaitable(
     Returns:
         Ok(value) on success, Err(exception) on caught failure.
     """
-    from ._decorators import _validate_catch, _validate_catch_no_broad_warning
+    from ._decorators import _validate_catch
     
     if not allow_broad:
-        _catch = _validate_catch_no_broad_warning(catch)
+        _catch = _validate_catch(catch, warn_broad=False)
     else:
         _catch = _validate_catch(catch)
 

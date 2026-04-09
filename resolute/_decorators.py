@@ -28,9 +28,14 @@ _FORBIDDEN_EXACT = (KeyboardInterrupt, SystemExit, GeneratorExit)
 ExcTypes = Union[Type[Exception], Tuple[Type[Exception], ...]]
 
 
-def _validate_catch(catch: Any) -> Tuple[Type[Exception], ...]:
+def _validate_catch(catch: Any, *, warn_broad: bool = True) -> Tuple[Type[Exception], ...]:
     """
     Validate the exception types supplied to @safe / @safe_async.
+
+    Args:
+        catch: Exception class or tuple of exception classes.
+        warn_broad: If True, warn when catching bare Exception.
+                    Set to False when allow_broad=True.
     """
     if isinstance(catch, type):
         catch_tuple: Tuple[Type[Exception], ...] = (catch,)
@@ -62,7 +67,7 @@ def _validate_catch(catch: Any) -> Tuple[Type[Exception], ...]:
                 f"not {exc_type.__name__}"
             )
 
-    if any(exc_type is Exception for exc_type in catch_tuple):
+    if warn_broad and any(exc_type is Exception for exc_type in catch_tuple):
         warnings.warn(
             "@safe(catch=Exception) catches ALL exceptions. "
             "Prefer specifying the exact exception types you expect.",
@@ -70,46 +75,6 @@ def _validate_catch(catch: Any) -> Tuple[Type[Exception], ...]:
             stacklevel=3,
         )
 
-    return catch_tuple
-
-
-def _validate_catch_no_broad_warning(catch: Any) -> Tuple[Type[Exception], ...]:
-    """
-    Same safety checks as _validate_catch, but without the broad-catch warning.
-    Used when allow_broad=True — we still block KeyboardInterrupt/SystemExit,
-    but don't warn about catching Exception.
-    """
-    if isinstance(catch, type):
-        catch_tuple: Tuple[Type[Exception], ...] = (catch,)
-    elif isinstance(catch, tuple):
-        catch_tuple = catch
-    else:
-        raise SafeDecoratorError(
-            "@safe `catch` must be an exception class or a tuple of exception "
-            f"classes, got {type(catch).__name__!r}"
-        )
-
-    for exc_type in catch_tuple:
-        if not isinstance(exc_type, type):
-            raise SafeDecoratorError(
-                f"@safe `catch` entries must be exception classes, "
-                f"got {exc_type!r}"
-            )
-
-        for forbidden in _FORBIDDEN_EXACT:
-            if issubclass(exc_type, forbidden):
-                raise SafeDecoratorError(
-                    f"@safe may not catch {exc_type.__name__} — it is a "
-                    "program-termination signal."
-                )
-
-        if not issubclass(exc_type, Exception):
-            raise SafeDecoratorError(
-                f"@safe may only catch Exception subclasses, "
-                f"not {exc_type.__name__}"
-            )
-
-    # No broad-catch warning — that's the whole point of allow_broad=True
     return catch_tuple
 
 
@@ -126,9 +91,7 @@ def safe(
         raise TypeError("The @safe decorator must be applied to a callable. Did you mean @safe(catch=Exception)?")
 
     if allow_broad:
-        # Still validate forbidden types (KeyboardInterrupt, SystemExit, etc.)
-        # but skip the broad-catch warning
-        _catch = _validate_catch_no_broad_warning(catch)
+        _catch = _validate_catch(catch, warn_broad=False)
     else:
         _catch = _validate_catch(catch)
 
@@ -167,7 +130,7 @@ def safe_async(
         raise TypeError("The @safe_async decorator must be applied to a callable. Did you mean @safe_async(catch=Exception)?")
 
     if allow_broad:
-        _catch = _validate_catch_no_broad_warning(catch)
+        _catch = _validate_catch(catch, warn_broad=False)
     else:
         _catch = _validate_catch(catch)
 

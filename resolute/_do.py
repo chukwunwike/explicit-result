@@ -57,6 +57,7 @@ from typing import (
 
 from ._result import Ok, Err, Result
 from ._option import Some, Option, _Nothing, _NothingType
+from ._context_vars import _do_context_active
 
 T = TypeVar("T")
 E = TypeVar("E")
@@ -113,33 +114,37 @@ def do() -> Callable[
 
         @functools.wraps(gen_func)
         def wrapper(*args: Any, **kwargs: Any) -> Result[T, E]:
-            gen = gen_func(*args, **kwargs)
-            # If the function returned early (no yield), it's not a generator
-            if not isinstance(gen, GeneratorType):
-                return _finalize_result(gen)
+            token = _do_context_active.set(True)
             try:
-                yielded = next(gen)
-                while True:
-                    # Guard: ensure the yielded value is a Result or Option
-                    if not hasattr(yielded, "_is_monadic") or not yielded._is_monadic:
-                        raise TypeError(
-                            f"Value yielded in @do must be Result or Option, got {type(yielded).__name__}. "
-                            "Did you mean to use '.unwrap()' or yield a valid container?"
-                        )
+                gen = gen_func(*args, **kwargs)
+                # If the function returned early (no yield), it's not a generator
+                if not isinstance(gen, GeneratorType):
+                    return _finalize_result(gen)
+                try:
+                    yielded = next(gen)
+                    while True:
+                        # Guard: ensure the yielded value is a Result or Option
+                        if not hasattr(yielded, "_is_monadic") or not yielded._is_monadic:
+                            raise TypeError(
+                                f"Value yielded in @do must be Result or Option, got {type(yielded).__name__}. "
+                                "Did you mean to use '.unwrap()' or yield a valid container?"
+                            )
 
-                    if isinstance(yielded, Err):
-                        return yielded
-                    
-                    if isinstance(yielded, _NothingType):
-                        return yielded  # type: ignore[return-value]
-                    
-                    # Send the unwrapped Ok value back
-                    try:
-                        yielded = gen.send(yielded.unwrap())
-                    except StopIteration as stop:
-                        return _finalize_result(stop.value)
-            except StopIteration as stop:
-                return _finalize_result(stop.value)
+                        if isinstance(yielded, Err):
+                            return yielded
+                        
+                        if isinstance(yielded, _NothingType):
+                            return yielded  # type: ignore[return-value]
+                        
+                        # Send the unwrapped Ok value back
+                        try:
+                            yielded = gen.send(yielded.unwrap())
+                        except StopIteration as stop:
+                            return _finalize_result(stop.value)
+                except StopIteration as stop:
+                    return _finalize_result(stop.value)
+            finally:
+                _do_context_active.reset(token)
 
         return wrapper
 
@@ -204,34 +209,38 @@ def do_option() -> Callable[
 
         @functools.wraps(gen_func)
         def wrapper(*args: Any, **kwargs: Any) -> Option[T]:
-            gen = gen_func(*args, **kwargs)
-            # If the function returned early (no yield), it's not a generator
-            if not isinstance(gen, GeneratorType):
-                return _finalize_option(gen)
+            token = _do_context_active.set(True)
             try:
-                yielded = next(gen)
-                while True:
-                    # Guard: ensure the yielded value is a Result or Option
-                    if not hasattr(yielded, "_is_monadic") or not yielded._is_monadic:
-                        raise TypeError(
-                            f"Value yielded in @do_option must be Option or Result, got {type(yielded).__name__}. "
-                            "Did you mean to use '.unwrap()' or yield a valid container?"
-                        )
+                gen = gen_func(*args, **kwargs)
+                # If the function returned early (no yield), it's not a generator
+                if not isinstance(gen, GeneratorType):
+                    return _finalize_option(gen)
+                try:
+                    yielded = next(gen)
+                    while True:
+                        # Guard: ensure the yielded value is a Result or Option
+                        if not hasattr(yielded, "_is_monadic") or not yielded._is_monadic:
+                            raise TypeError(
+                                f"Value yielded in @do_option must be Option or Result, got {type(yielded).__name__}. "
+                                "Did you mean to use '.unwrap()' or yield a valid container?"
+                            )
 
-                    if isinstance(yielded, _NothingType):
-                        return _Nothing
+                        if isinstance(yielded, _NothingType):
+                            return _Nothing
 
-                    if isinstance(yielded, Err):
-                        return _Nothing  # Err in Option context → Nothing
-                    
-                    # Special case: if a Result is yielded in do_option, transpose it?
-                    # No, let's keep it simple: just unwrap if it has .unwrap()
-                    try:
-                        yielded = gen.send(yielded.unwrap())
-                    except StopIteration as stop:
-                        return _finalize_option(stop.value)
-            except StopIteration as stop:
-                return _finalize_option(stop.value)
+                        if isinstance(yielded, Err):
+                            return _Nothing  # Err in Option context → Nothing
+                        
+                        # Special case: if a Result is yielded in do_option, transpose it?
+                        # No, let's keep it simple: just unwrap if it has .unwrap()
+                        try:
+                            yielded = gen.send(yielded.unwrap())
+                        except StopIteration as stop:
+                            return _finalize_option(stop.value)
+                except StopIteration as stop:
+                    return _finalize_option(stop.value)
+            finally:
+                _do_context_active.reset(token)
 
         return wrapper
 
