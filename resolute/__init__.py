@@ -56,6 +56,7 @@ from ._combinators import (
     collect_all,
     partition,
     flatten_result,
+    flatten_option,
     sequence,
     transpose,
     transpose_result,
@@ -68,7 +69,14 @@ from ._exceptions import UnwrapError, SafeDecoratorError
 from ._context import ContextError
 
 # Async helpers
-from ._async_helpers import from_awaitable, map_async, and_then_async
+from ._async_helpers import (
+    from_awaitable,
+    map_async,
+    and_then_async,
+    from_optional_async,
+    map_option_async,
+    and_then_option_async,
+)
 
 # Do-notation
 from ._do import do, do_option
@@ -90,6 +98,7 @@ __all__ = [
     "collect_all",
     "partition",
     "flatten_result",
+    "flatten_option",
     "sequence",
     "transpose",
     "transpose_result",
@@ -102,12 +111,15 @@ __all__ = [
     "from_awaitable",
     "map_async",
     "and_then_async",
+    "from_optional_async",
+    "map_option_async",
+    "and_then_option_async",
     # Do-notation
     "do",
     "do_option",
 ]
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__ = "resolute contributors"
 __license__ = "MIT"
 

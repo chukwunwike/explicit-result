@@ -21,6 +21,7 @@ from typing import (
 )
 
 from ._result import Ok, Err, Result
+from ._option import Option, Some, Nothing
 
 T = TypeVar("T")
 E = TypeVar("E")
@@ -94,3 +95,36 @@ async def and_then_async(
     if isinstance(result, Ok):
         return await f(result.value)
     return result  # type: ignore[return-value]
+
+
+async def from_optional_async(aw: Awaitable[T | None]) -> Option[T]:
+    """
+    Await a nullable value and wrap it in Option. Nothing if None.
+    """
+    value = await aw
+    return Some(value) if value is not None else Nothing
+
+
+async def map_option_async(
+    opt: Option[T],
+    f: Callable[[T], Awaitable[U]],
+) -> Option[U]:
+    """
+    Apply an async function to the Some value of an Option.
+    """
+    if isinstance(opt, Some):
+        value = await f(opt.value)
+        return Some(value)
+    return opt  # type: ignore[return-value]
+
+
+async def and_then_option_async(
+    opt: Option[T],
+    f: Callable[[T], Awaitable[Option[U]]],
+) -> Option[U]:
+    """
+    Chain an async Option-returning function on the Some value.
+    """
+    if isinstance(opt, Some):
+        return await f(opt.value)
+    return opt  # type: ignore[return-value]

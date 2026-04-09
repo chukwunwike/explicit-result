@@ -50,6 +50,7 @@ class Result(Generic[T, E]):
     """
 
     __slots__ = ()
+    _is_monadic = True
 
     # ------------------------------------------------------------------ #
     # State inspection
@@ -95,6 +96,16 @@ class Result(Generic[T, E]):
             Result.from_optional(db.find(uid), "user not found")
         """
         return Ok(value) if value is not None else Err(error)
+
+    @classmethod
+    def of(cls, value: T | None, error: E) -> "Result[T, E]":
+        """
+        Alias for from_optional(). Wrap a nullable value.
+        Returns Ok(value) if not None, Err(error) otherwise.
+
+            Result.of(db.find(uid), "missing")
+        """
+        return cls.from_optional(value, error)
 
     # ------------------------------------------------------------------ #
     # Extracting values (safe)
@@ -302,6 +313,44 @@ class Result(Generic[T, E]):
         if isinstance(self, Err):
             return other
         return cast(Result[T, F], self)
+
+    def zip(self, other: "Result[U, E]") -> "Result[tuple[T, U], E]":
+        """
+        Combine two Ok values into an Ok tuple.
+        Returns the first Err Encountered if either is Err.
+
+            Ok(1).zip(Ok("a"))   # Ok((1, "a"))
+            Err("x").zip(Ok("a")) # Err("x")
+            Ok(1).zip(Err("y"))  # Err("y")
+        """
+        if isinstance(self, Ok):
+            if isinstance(other, Ok):
+                return Ok((self._value, other._value))
+            return cast(Result[tuple[T, U], E], other)
+        return cast(Result[tuple[T, U], E], self)
+
+    def transpose(self) -> "Option[Result[T, E]]":
+        """
+        Transpose Result[Option[T], E] into Option[Result[T, E]].
+
+        Returns:
+            - Some(Ok(v)) if self is Ok(Some(v))
+            - Nothing if self is Ok(Nothing)
+            - Some(Err(e)) if self is Err(e)
+
+            Ok(Some(1)).transpose()  # Some(Ok(1))
+            Ok(Nothing).transpose()   # Nothing
+            Err("x").transpose()     # Some(Err("x"))
+        """
+        from ._option import Some, _Nothing
+        if isinstance(self, Err):
+            return Some(self)
+        
+        # self is Ok(Option)
+        inner = self.unwrap()
+        if inner.is_some():
+            return Some(Ok(inner.unwrap()))
+        return _Nothing
 
     def flatten(self) -> "Result[T, E]":
         """

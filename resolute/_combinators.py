@@ -115,6 +115,19 @@ def flatten_result(result: Result[Result[T, E], E]) -> Result[T, E]:
     return result.and_then(lambda x: x)
 
 
+def flatten_option(opt: Option[Option[T]]) -> Option[T]:
+    """
+    Flatten a nested Option[Option[T]] into Option[T].
+
+        flatten_option(Some(Some(1)))  # Some(1)
+        flatten_option(Some(Nothing))  # Nothing
+        flatten_option(Nothing)        # Nothing
+
+    Equivalent to opt.and_then(lambda x: x).
+    """
+    return opt.and_then(lambda x: x)
+
+
 # --------------------------------------------------------------------------- #
 # Option combinators
 # --------------------------------------------------------------------------- #

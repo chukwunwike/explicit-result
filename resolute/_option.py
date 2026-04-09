@@ -47,6 +47,7 @@ class Option(Generic[T]):
     """
 
     __slots__ = ()
+    _is_monadic = True
 
     # ------------------------------------------------------------------ #
     # State inspection
@@ -262,6 +263,30 @@ class Option(Generic[T]):
         if isinstance(self, Some):
             return self
         return Nothing
+
+    def transpose(self) -> "Result[Option[T], E]":
+        """
+        Transpose Option[Result[T, E]] into Result[Option[T], E].
+
+        Returns:
+            - Ok(Some(v)) if self is Some(Ok(v))
+            - Err(e) if self is Some(Err(e))
+            - Ok(Nothing) if self is Nothing
+
+            Some(Ok(1)).transpose()    # Ok(Some(1))
+            Some(Err("x")).transpose() # Err("x")
+            Nothing.transpose()        # Ok(Nothing)
+        """
+        from ._result import Ok
+        if isinstance(self, Some):
+            inner = self.unwrap()
+            if hasattr(inner, "is_ok"): # check if it's a Result
+                if inner.is_ok():
+                    return Ok(Some(inner.unwrap()))
+                return inner
+            # Fallback for non-Result Some values (though transpose is intended for Result)
+            return Ok(self)
+        return Ok(Nothing)
 
     # ------------------------------------------------------------------ #
     # Converting to Result

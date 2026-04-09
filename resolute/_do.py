@@ -118,13 +118,24 @@ def do() -> Callable[
             if not isinstance(gen, GeneratorType):
                 return _finalize_result(gen)
             try:
-                result = next(gen)
+                yielded = next(gen)
                 while True:
-                    if isinstance(result, Err):
-                        return result
-                    # Send the unwrapped Ok value back into the generator
+                    # Guard: ensure the yielded value is a Result or Option
+                    if not hasattr(yielded, "_is_monadic") or not yielded._is_monadic:
+                        raise TypeError(
+                            f"Value yielded in @do must be Result or Option, got {type(yielded).__name__}. "
+                            "Did you mean to use '.unwrap()' or yield a valid container?"
+                        )
+
+                    if isinstance(yielded, Err):
+                        return yielded
+                    
+                    if isinstance(yielded, _NothingType):
+                        return yielded  # type: ignore[return-value]
+                    
+                    # Send the unwrapped Ok value back
                     try:
-                        result = gen.send(result.unwrap())
+                        yielded = gen.send(yielded.unwrap())
                     except StopIteration as stop:
                         return _finalize_result(stop.value)
             except StopIteration as stop:
@@ -198,13 +209,25 @@ def do_option() -> Callable[
             if not isinstance(gen, GeneratorType):
                 return _finalize_option(gen)
             try:
-                option = next(gen)
+                yielded = next(gen)
                 while True:
-                    if isinstance(option, _NothingType):
+                    # Guard: ensure the yielded value is a Result or Option
+                    if not hasattr(yielded, "_is_monadic") or not yielded._is_monadic:
+                        raise TypeError(
+                            f"Value yielded in @do_option must be Option or Result, got {type(yielded).__name__}. "
+                            "Did you mean to use '.unwrap()' or yield a valid container?"
+                        )
+
+                    if isinstance(yielded, _NothingType):
                         return _Nothing
-                    # Send the unwrapped Some value back into the generator
+
+                    if isinstance(yielded, Err):
+                        return yielded  # type: ignore[return-value]
+                    
+                    # Special case: if a Result is yielded in do_option, transpose it?
+                    # No, let's keep it simple: just unwrap if it has .unwrap()
                     try:
-                        option = gen.send(option.unwrap())
+                        yielded = gen.send(yielded.unwrap())
                     except StopIteration as stop:
                         return _finalize_option(stop.value)
             except StopIteration as stop:
