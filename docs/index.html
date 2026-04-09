@@ -729,7 +729,6 @@
       <a href="#philosophy">Philosophy</a>
       <a href="#what-belongs">What Belongs in Result</a>
       <a href="#patterns">Real-World Patterns</a>
-      <a href="#comparison">Comparison</a>
       <a href="#reference">API Reference</a>
     </nav>
 
@@ -1259,8 +1258,9 @@ description = (
           provides syntactic sugar similar to Haskell's <code>do</code> or Rust's <code>?</code> operator.</p>
         <p>Unlike some other libraries, resolute <strong>fully supports branching logic</strong> (if/else), loops, and
           early returns inside the generator, as it leverages standard Python generator semantics.</p>
-        <p><strong>Safety Guard (v0.3.1)</strong>: Using <code>yield</code> without the decorator issues a 
-          <code>RuntimeWarning</code> to prevent leaked generators.</p>
+        <p><strong>Safety Guard (v0.3.1)</strong>: Using <code>yield</code> without the decorator issues a
+          <code>RuntimeWarning</code> to prevent leaked generators.
+        </p>
 
 
         <pre><span class="kw">from</span> resolute <span class="kw">import</span> do, Ok, Err, Result
@@ -1538,119 +1538,6 @@ errors = <span class="fn">collect_all</span>([
 <span class="cm"># Either all pass — or you get ALL failures in one list</span>
 <span class="kw">if</span> errors.is_err():
     <span class="fn">return</span> Response({<span class="str">"errors"</span>: errors.unwrap_err()}, status=<span class="num">400</span>)</pre>
-      </section>
-
-      <!-- COMPARISON -->
-      <section id="comparison">
-        <div class="section-label">Reference</div>
-        <h2>Comparison</h2>
-
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th>Feature</th>
-              <th>resolute</th>
-              <th>returns (dry-python)</th>
-              <th>result (rustedpy)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Zero dependencies</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗ (mypy plugin)</span></td>
-              <td><span class="yes">✓</span></td>
-            </tr>
-            <tr>
-              <td>Result type</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-            </tr>
-            <tr>
-              <td>Option type</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓ (Maybe)</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>@safe decorator</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>@safe_async</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>do-notation (yield)</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-            </tr>
-            <tr>
-              <td>Error context chains</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>Implicit Boolean Safety</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>Traceback Diagnostics</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>collect / collect_all</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>partition</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>Pattern matching</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="yes">✓</span></td>
-            </tr>
-            <tr>
-              <td>Hashable (usable in sets/dicts)</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>Iterable</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-            <tr>
-              <td>Enforced @safe catch types</td>
-              <td><span class="yes">✓</span></td>
-              <td><span class="no">✗</span></td>
-              <td><span class="no">✗</span></td>
-            </tr>
-          </tbody>
-        </table>
-        <p style="font-size: 0.75rem; color: #777; margin-top: 1rem;">
-          * <code>Result</code> and <code>Option</code> are hashable only if the contained values are hashable.
-          Immutable values are strongly recommended for safety and predictability.
-        </p>
       </section>
 
       <!-- INTEGRATIONS -->
