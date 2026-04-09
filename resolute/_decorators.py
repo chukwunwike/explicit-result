@@ -114,7 +114,7 @@ def safe(
         return wrapper
 
     if func is not None:
-        return decorator(func)
+        return decorator(cast(Callable[..., T], func))
     return decorator
 
 
@@ -127,8 +127,9 @@ def safe_async(
     """
     Async version of @safe.
     """
-    if func is not None and not callable(func):
-        raise TypeError("The @safe_async decorator must be applied to a callable. Did you mean @safe_async(catch=Exception)?")
+    if func is not None:
+        if not callable(func) or (isinstance(func, type) and issubclass(func, BaseException)):
+            raise TypeError("The @safe_async decorator must be applied to a callable. Did you mean @safe_async(catch=SomeException)?")
 
     if allow_broad:
         _catch = _validate_catch(catch, warn_broad=False)
@@ -151,5 +152,5 @@ def safe_async(
         return wrapper
 
     if func is not None:
-        return decorator(func)
+        return decorator(cast(Callable[..., Any], func))
     return decorator
