@@ -919,6 +919,8 @@ Use `collect` when you want to run multiple operations and either get all values
 
 ### collect_all
 
+**Rule of thumb: `collect` stops at the first error; `collect_all` accumulates all errors.**
+
 Like `collect`, but gathers **all** errors instead of stopping at the first one. Returns `Ok([...])` if all results are Ok, or `Err([error1, error2, ...])` containing every error found.
 
 ```python
