@@ -1383,7 +1383,7 @@ r.map(str).map_err(str.upper)
 | `or_(other)` | `(Result[T, F]) -> Result[T, F]` | Return self if Ok, other if Err |
 | `ok()` | `() -> Option[T]` | Convert to Option, dropping error |
 | `err()` | `() -> Option[E]` | Convert error to Option |
-| `from_optional(v, e)` | `(T | None, E) -> Result[T, E]` | Ok(v) if v is not None, else Err(e) |
+| `from_optional(v, e)` | `(Optional[T], E) -> Result[T, E]` | Ok(v) if v is not None, else Err(e) |
 
 
 ### Option[T]

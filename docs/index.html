@@ -1619,7 +1619,7 @@ errors = <span class="fn">collect_all</span>([
           <tbody>
             <tr>
               <td><code>from_optional(v, e)</code></td>
-              <td><code>Result[T, E]</code></td>
+              <td><code>(Optional[T], E) &rarr; Result[T, E]</code></td>
               <td class="method-desc">Ok(v) if v is not None, else Err(e)</td>
             </tr>
           </tbody>
