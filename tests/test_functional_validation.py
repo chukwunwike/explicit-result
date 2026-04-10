@@ -1,5 +1,5 @@
 """
-Functional validation tests for Resolute.
+Functional validation tests for explicit-result.
 This suite demonstrates the primary user-facing features and confirms
 that the library behaves as expected in common scenarios.
 """

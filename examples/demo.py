@@ -1,5 +1,5 @@
 """
-Resolute Real-World Demo: Weather Processing Pipeline
+explicit-result Real-World Demo: Weather Processing Pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This example simulates a production data pipeline that:
 1. Fetches raw JSON from a "Weather API".
@@ -52,7 +52,7 @@ class WeatherAPI:
             ]
         }
 
-# --- 3. Functional Pipeline using Resolute ---
+# --- 3. Functional Pipeline using explicit-result ---
 
 api = WeatherAPI()
 
@@ -97,7 +97,7 @@ def process_city_weather(city: str) -> Result[float, str]:
 # --- 4. Running the Demo ---
 
 def run_demo():
-    print("=== Resolute Production Pipeline Demo ===\n")
+    print("=== explicit-result Production Pipeline Demo ===\n")
     cities = ["London", "Paris", "InvalidCity", "New York (Timeout Simulation)"]
     
     for city in cities:

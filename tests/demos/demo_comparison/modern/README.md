@@ -1,4 +1,4 @@
-# Modern Codebase: Resolute Benefits
+# Modern Codebase: explicit-result Benefits
 
 This codebase demonstrates how `explicit_result` transforms fragile, nested logic into robust, readable pipelines.
 

@@ -1,10 +1,10 @@
 """
-explicit_result._async_helpers
-~~~~~~~~~~~~~~~~~~~~~~~~
-Async ergonomics for Result and Option.
+explicit-result: Async Utilities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These utilities bridge the gap between sync Result/Option types
-and async/await code, eliminating awkward nested awaits.
+Async ergonomics for Result and Option. These utilities bridge the gap
+between monadic types and async/await code, eliminating nested awaits
+and providing a fluent async API.
 """
 
 from __future__ import annotations
@@ -102,6 +102,11 @@ async def and_then_async(
 async def from_optional_async(aw: Awaitable[T | None]) -> Option[T]:
     """
     Await a nullable value and wrap it in Option. Nothing if None.
+
+    Example:
+        >>> async def get_val(): return None
+        >>> await from_optional_async(get_val())
+        Nothing
     """
     value = await aw
     return Some(value) if value is not None else Nothing

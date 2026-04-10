@@ -29,7 +29,7 @@ def scenario(num: int, desc: str) -> None:
 
 
 def run_all_scenarios():
-    header("RESOLUTE INTEGRATION TEST: Real Exceptions, Real Safety")
+    header("EXPLICIT-RESULT INTEGRATION TEST: Real Exceptions, Real Safety")
     passed = 0
     failed = 0
 

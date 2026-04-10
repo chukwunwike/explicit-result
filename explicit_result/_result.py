@@ -1,11 +1,12 @@
 """
-explicit_result._result
-~~~~~~~~~~~~~~~~~
-Core Result[T, E] type with Ok and Err variants.
+explicit-result: Core Result Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Result represents a computation that can either succeed (Ok) or fail (Err).
+Result[T, E] represents a computation that can either succeed (Ok) or fail (Err).
 It forces the caller to handle both cases explicitly, making error paths
 visible in the type system and eliminating surprise exceptions.
+
+This module provides the base `Result` class and its two variants, `Ok` and `Err`.
 """
 
 from __future__ import annotations
@@ -51,6 +52,13 @@ class Result(Generic[T, E]):
     Type parameters:
         T — the success value type
         E — the error value type
+    
+    Example:
+        >>> from explicit_result import Ok, Err, Result
+        >>> def divide(a: int, b: int) -> Result[float, str]:
+        ...     if b == 0:
+        ...         return Err("division by zero")
+        ...     return Ok(a / b)
     """
 
     __slots__ = ()
@@ -159,7 +167,12 @@ class Result(Generic[T, E]):
         """
         Return the Ok value, or raise the given exception if Err.
 
-            Err("bad").unwrap_or_raise(ValueError("config failed"))
+        Example:
+            >>> Ok(1).unwrap_or_raise(ValueError("fail"))
+            1
+            >>> Err("bad").unwrap_or_raise(ValueError("config failed"))
+            Traceback (most recent call last):
+            ValueError: config failed
         """
         if isinstance(self, Ok):
             return cast(T, self._value)
@@ -198,6 +211,13 @@ class Result(Generic[T, E]):
     def expect_err(self, message: str) -> E:
         """
         Return the Err value, or raise UnwrapError with a custom message if Ok.
+        
+        Example:
+            >>> Err("fail").expect_err("must be error")
+            'fail'
+            >>> Ok(1).expect_err("must be error")
+            Traceback (most recent call last):
+            explicit_result._exceptions.UnwrapError: must be error: 1
         """
         if isinstance(self, Err):
             return cast(E, self._error)
@@ -480,7 +500,7 @@ class Result(Generic[T, E]):
     def __bool__(self) -> bool:
         """Prevent boolean evaluation to avoid hidden truthiness bugs."""
         raise RuntimeError(
-            "Resolute types do not support implicit boolean truthiness. "
+            "explicit-result types do not support implicit boolean truthiness. "
             "Use .is_ok(), .is_err(), or pattern matching instead."
         )
 

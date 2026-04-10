@@ -29,7 +29,7 @@ def _check_do_context(instance: object, decorator_hint: str = "@do") -> None:
         # CO_GENERATOR = 0x20
         if caller.f_code.co_flags & 0x20:
             warnings.warn(
-                f"Resolute type {type(instance).__name__} created inside generator "
+                f"explicit-result type {type(instance).__name__} created inside generator "
                 f"'{caller.f_code.co_name}' without {decorator_hint} decorator. "
                 f"This will return a generator object instead of a Result/Option. "
                 f"Did you forget to add {decorator_hint}()?",

@@ -11,7 +11,7 @@ db = Database()
 @do()
 def update_user_balance(user_id, amount) -> Result[bool, str]:
     """
-    MODERN RESOLUTE CODE:
+    MODERN EXPLICIT-RESULT CODE:
     We use @safe to wrap the database call. This automatically converts 
     exceptions into Err objects, preserving the original error context.
     """
@@ -26,7 +26,7 @@ def update_user_balance(user_id, amount) -> Result[bool, str]:
 
 if __name__ == "__main__":
     print("="*40)
-    print("RESOLUTE MODERN HANDLER")
+    print("EXPLICIT-RESULT MODERN HANDLER")
     print("="*40)
     
     print("Updating Alice (Valid):")

@@ -14,7 +14,7 @@ print("Alice: ", legacy.update_user_balance("user_1", 10))
 print("Bob (0):", legacy.update_user_balance("user_2", 0))    # Swallows ZeroDivisionError
 print("None:  ", legacy.update_user_balance("user_99", 10)) # Swallows KeyError
 
-print("\n--- RUNNING MODERN (RESOLUTE HARDENED) ---")
+print("\n--- RUNNING MODERN (EXPLICIT-RESULT HARDENED) ---")
 # We reload to ensure fresh state if needed, though they use their own imports
 import modern.db_handler as modern
 print("Alice: ", modern.update_user_balance("user_1", 10))

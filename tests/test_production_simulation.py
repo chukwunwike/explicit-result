@@ -80,7 +80,7 @@ def test_fastapi_and_pydantic_integration():
 
 # ============================================================================
 # Test 2: The "Flaky Microservice / Network Chaos" Test
-# Proves: Resolute handles massive concurrency and random failures gracefully
+# Proves: explicit-result handles massive concurrency and random failures gracefully
 # ============================================================================
 
 class NetworkTimeout(Exception): pass

@@ -340,7 +340,7 @@ class TestErrorRecoveryChains:
     def test_fallback_chain(self):
         """Try env var -> try file -> use hardcoded default."""
         result = (
-            self._from_env("RESOLUTE_TEST_SECRET_KEY_THAT_DOESNT_EXIST")
+            self._from_env("EXPLICIT_RESULT_TEST_SECRET_KEY_THAT_DOESNT_EXIST")
             .or_else(lambda _: self._from_file("/nonexistent/secret.key"))
             .or_else(lambda _: Ok("default-dev-key-12345"))
         )
@@ -348,12 +348,12 @@ class TestErrorRecoveryChains:
 
     def test_first_success_stops_chain(self):
         """If env var exists, don't even try the file."""
-        os.environ["_RESOLUTE_TEST_KEY"] = "from-env"
+        os.environ["_EXPLICIT_RESULT_TEST_KEY"] = "from-env"
         try:
             result = (
-                self._from_env("_RESOLUTE_TEST_KEY")
+                self._from_env("_EXPLICIT_RESULT_TEST_KEY")
                 .or_else(lambda _: self._from_file("/should/not/be/read"))
             )
             assert result == Ok("from-env")
         finally:
-            del os.environ["_RESOLUTE_TEST_KEY"]
+            del os.environ["_EXPLICIT_RESULT_TEST_KEY"]

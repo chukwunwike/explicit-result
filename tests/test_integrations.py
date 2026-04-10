@@ -65,7 +65,7 @@ def test_pydantic_profile_success():
     assert isinstance(p.bio, Option)
 
 def test_pydantic_profile_dict_init():
-    # Test with dict-based initialization which triggers Resolute validator
+    # Test with dict-based initialization which triggers explicit-result validator
     p = UserProfile(status={"ok": "active"}, bio=None)
     assert p.status == Ok("active")
     assert p.bio is Nothing

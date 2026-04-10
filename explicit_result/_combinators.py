@@ -1,14 +1,10 @@
 """
-explicit_result._combinators
-~~~~~~~~~~~~~~~~~~~~~~
-Higher-order utilities for working with collections of Results and Options.
+explicit-result: Combinators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    collect        — Ok([...]) if all Ok, else first Err
-    collect_all    — Ok([...]) if all Ok, else Err([all errors])
-    partition      — split list into (ok_values, err_values)
-    transpose      — flip Option[Result] <-> Result[Option]
-    flatten_result — Result[Result[T, E], E] -> Result[T, E]
-    sequence       — like collect but for Option lists
+Higher-order utilities for working with collections of Results and Options.
+These functions help you handle multiple monadic values at once, providing
+common patterns for aggregation, partitioning, and transformation.
 """
 
 from __future__ import annotations

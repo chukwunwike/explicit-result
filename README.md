@@ -663,7 +663,7 @@ It also means `Nothing == Nothing` is always True, and `Nothing is Nothing` is a
 Unlike some other libraries, `explicit-result`'s do-notation **fully supports branching logic** (if/else), loops, and early returns, as it leverages standard Python generators.
 
 > [!IMPORTANT]
-> **Safety Guard (v0.3.1)**: If you use `yield` inside a function but forget the `@do` or `@do_option` decorator, Resolute will issue a `RuntimeWarning` at runtime to prevent you from accidentally returning a silent generator object.
+> **Safety Guard (v0.3.1)**: If you use `yield` inside a function but forget the `@do` or `@do_option` decorator, explicit-result will issue a `RuntimeWarning` at runtime to prevent you from accidentally returning a silent generator object.
 
 
 ### Result with @do
@@ -783,10 +783,10 @@ except ContextError as e:
 
 ## Diagnostic Visibility
 
-Resolute v0.3.1 introduces "Hybrid Representation" for errors. You get immediate diagnostic depth without any boilerplate.
+explicit-result v0.3.1 introduces "Hybrid Representation" for errors. You get immediate diagnostic depth without any boilerplate.
 
 ### 1. The Verbose Default (`print`)
-When you `print(result)` or convert it to a string, Resolute extracts the **full stack trace** from where the error originated.
+When you `print(result)` or convert it to a string, explicit-result extracts the **full stack trace** from where the error originated.
 
 ```python
 # Output if result is Err:
@@ -806,7 +806,7 @@ Err(ZeroDivisionError: division by zero at logic.py:42)
 ```
 
 ### Configuration
-You can control traceback verbosity via the `RESOLUTE_VERBOSE_ERROR` environment variable:
+You can control traceback verbosity via the `EXPLICIT_RESULT_VERBOSE_ERROR` environment variable:
 - `1` (Default): Enable full tracebacks in `str()`.
 - `0`: Disable tracebacks (Concise mode only).
 
@@ -1459,7 +1459,7 @@ Because `Exception` catches `AttributeError`, `IndexError`, `TypeError`, `NameEr
 
 ## Integrations
 
-Resolute provides native support for modern Python frameworks.
+explicit-result provides native support for modern Python frameworks.
 
 ### FastAPI
 Use `explicit_result.integrations.fastapi.unwrap_or_http` to cleanly convert `Result` or `Option` values into `HTTPException` responses.
@@ -1491,9 +1491,9 @@ class UserProfile(BaseModel):
 
 ## Performance
 
-Resolute is optimized for minimal overhead. In micro-benchmarks, it adds fixed overhead (~300ns) compared to raw Python features.
+explicit-result is optimized for minimal overhead. In micro-benchmarks, it adds fixed overhead (~300ns) compared to raw Python features.
 
-| Pattern | Native Python | Resolute | Overhead |
+| Pattern | Native Python | explicit-result | Overhead |
 | :--- | :--- | :--- | :--- |
 | **Happy Path** (Ok vs Return) | ~95ns | ~400ns | +305ns |
 | **Error Path** (@safe vs try) | ~600ns | ~900ns | +300ns |

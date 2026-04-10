@@ -1170,7 +1170,7 @@ result = <span class="fn">read_config</span>()
         <pre>result = <span class="fn">read_file</span>(path).with_context(<span class="kw">lambda</span>: <span class="str">f"Failed to read from {path}"</span>)</pre>
 
         <h3>Diagnostic Visibility</h3>
-        <p>Resolute v0.3.1 features "Hybrid Representation" for errors, providing immediate diagnostic value.</p>
+        <p>explicit-result v0.3.1 features "Hybrid Representation" for errors, providing immediate diagnostic value.</p>
         <div class="two-col">
           <div>
             <h4>1. Verbose View (str)</h4>
@@ -1182,7 +1182,7 @@ result = <span class="fn">read_config</span>()
           </div>
         </div>
         <p style="font-size: 0.85rem; color: #666; margin-top: 1rem;">
-          Control verbosity via <code>RESOLUTE_VERBOSE_ERROR</code> environment variable (1=Enabled, 0=Disabled).
+          Control verbosity via <code>EXPLICIT_RESULT_VERBOSE_ERROR</code> environment variable (1=Enabled, 0=Disabled).
         </p>
       </section>
 
@@ -1572,14 +1572,14 @@ errors = <span class="fn">collect_all</span>([
       <section class="alt" id="performance">
         <div class="section-label">Zero Cost</div>
         <h2>Performance Benchmarks</h2>
-        <p>Resolute adds negligible overhead compared to raw Python features (~300ns per operation).</p>
+        <p>explicit-result adds negligible overhead compared to raw Python features (~300ns per operation).</p>
 
         <table class="method-table">
           <thead>
             <tr>
               <th>Pattern</th>
               <th>Native Python</th>
-              <th>Resolute</th>
+              <th>explicit-result</th>
               <th>Overhead</th>
             </tr>
           </thead>

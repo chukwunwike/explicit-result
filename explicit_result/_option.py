@@ -1,10 +1,11 @@
 """
-explicit_result._option
-~~~~~~~~~~~~~~~~~
-Core Option[T] type with Some and Nothing variants.
+explicit-result: Core Option Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Option represents a value that may or may not exist.
+Option[T] represents a value that may or may not exist.
 It is an explicit, type-safe alternative to returning None.
+
+This module provides the base `Option` class and its two variants, `Some` and `Nothing`.
 """
 
 from __future__ import annotations
@@ -127,6 +128,13 @@ class Option(Generic[T]):
     def unwrap_or_raise(self, exc: Exception) -> T:
         """
         Return the Some value, or raise the given exception if Nothing.
+
+        Example:
+            >>> Some(1).unwrap_or_raise(ValueError("missing"))
+            1
+            >>> Nothing.unwrap_or_raise(ValueError("missing"))
+            Traceback (most recent call last):
+            ValueError: missing
         """
         if isinstance(self, Some):
             return cast(T, self._value)
@@ -343,7 +351,7 @@ class Option(Generic[T]):
     def __bool__(self) -> bool:
         """Prevent boolean evaluation to avoid hidden truthiness bugs."""
         raise RuntimeError(
-            "Resolute types do not support implicit boolean truthiness. "
+            "explicit-result types do not support implicit boolean truthiness. "
             "Use .is_some(), .is_nothing(), or pattern matching instead."
         )
 

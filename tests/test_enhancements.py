@@ -212,7 +212,7 @@ class TestContextPropagation:
         assert err.cause == "[Errno 2] No such file or directory: 'app.json'" or "app.json" in str(err.cause)
 
     def test_configurable_verbosity(self, monkeypatch):
-        """Verify RESOLUTE_VERBOSE_ERROR environment variable control."""
+        """Verify EXPLICIT_RESULT_VERBOSE_ERROR environment variable control."""
         def fail():
             return 1 / 0
         
@@ -222,13 +222,13 @@ class TestContextPropagation:
             res = Err(e)
             
             # Case 1: Verbose (default or "1")
-            monkeypatch.setenv("RESOLUTE_VERBOSE_ERROR", "1")
+            monkeypatch.setenv("EXPLICIT_RESULT_VERBOSE_ERROR", "1")
             verbose_str = str(res)
             assert "Traceback" in verbose_str
             assert "ZeroDivisionError" in verbose_str
             
             # Case 2: Concise ("0")
-            monkeypatch.setenv("RESOLUTE_VERBOSE_ERROR", "0")
+            monkeypatch.setenv("EXPLICIT_RESULT_VERBOSE_ERROR", "0")
             concise_str = str(res)
             # Should be concise, similar to repr but maybe slightly different
             # Based on implementation, str(Err(e)) uses _format_error

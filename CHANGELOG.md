@@ -5,7 +5,7 @@
 ### Added
 - **Do-Notation Safety**: Runtime leak detector for `yield` without decorators
 - **Hybrid Tracebacks**: Full tracebacks in `str()` but concise markers in `repr()`
-- **Configurable Verbosity**: `RESOLUTE_VERBOSE_ERROR` environment variable control
+- **Configurable Verbosity**: `EXPLICIT_RESULT_VERBOSE_ERROR` environment variable control
 - **Decorator Validation**: Decoration-time enforcement for `@safe` and `@safe_async`
 - **Singleton Copying**: `Nothing` now supports `__copy__` and `__deepcopy__`
 

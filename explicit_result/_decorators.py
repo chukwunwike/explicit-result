@@ -1,11 +1,19 @@
 """
-explicit_result._decorators
-~~~~~~~~~~~~~~~~~~~~~
-@safe and @safe_async decorators.
+explicit-result: Safe Decorators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These wrap exception-throwing functions into Result-returning functions,
-bridging existing Python code (which uses exceptions) with the Result-based
-world.
+@safe and @safe_async decorators wrap exception-throwing functions into
+Result-returning functions. These decorators make side effects and failure
+modes explicit, allowing you to handle errors as data rather than control flow.
+
+Example:
+    >>> @safe(catch=ValueError)
+    >>> def parse_int(s: str) -> int:
+    ...     return int(s)
+    >>> parse_int("123")
+    Ok(123)
+    >>> parse_int("abc")
+    Err(ValueError("invalid literal for int() with base 10: 'abc'"))
 """
 
 from __future__ import annotations
