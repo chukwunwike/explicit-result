@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "resolute"
+name = "explicit-result"
 version = "0.3.1"
 description = "Result and Option types for Python — zero dependencies, fully typed"
 readme = "README.md"

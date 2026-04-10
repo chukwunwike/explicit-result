@@ -1,4 +1,4 @@
-# resolute
+# explicit-result
 <!--   
 -->
 [![Tests](https://github.com/chukwunwike/resolute/actions/workflows/tests.yml/badge.svg)](https://github.com/chukwunwike/resolute/actions/workflows/tests.yml)
@@ -19,7 +19,7 @@
 
 Python functions lie. A function typed as `-> int` might return an integer, raise a `ValueError`, raise a `ConnectionError`, or return `None` depending on conditions the caller cannot see. The type system gives you no warning. You discover the truth at runtime, usually in production.
 
-`resolute` fixes this by making errors **visible in the function signature itself**.
+`explicit-result` fixes this by making errors **visible in the function signature itself**.
 
 ```python
 from resolute import Ok, Err, Result
@@ -44,7 +44,7 @@ The signature `Result[float, str]` is a contract: *"I will give you either a flo
 - [Core Concepts](#core-concepts)
   - [Why not exceptions?](#why-not-exceptions)
   - [Why not returning None?](#why-not-returning-none)
-  - [The resolute philosophy](#the-resolute-philosophy)
+  - [The explicit-result philosophy](#the-resolute-philosophy)
 - [Safety & Reliability (v0.3.1)](#safety--reliability-v031)
 - [Result\[T, E\]](#resultt-e)
   - [Creating Results](#creating-results)
@@ -101,10 +101,10 @@ The signature `Result[float, str]` is a contract: *"I will give you either a flo
 ## Installation
 
 ```bash
-pip install resolute
+pip install explicit-result
 ```
 
-`resolute` has **zero dependencies**. It requires Python 3.9 or later.
+`explicit-result` has **zero dependencies**. It requires Python 3.9 or later.
 
 For Python 3.10+ you get full structural pattern matching support automatically.
 
@@ -192,7 +192,7 @@ config = find_config("/etc/app.conf")
 
 `None` is also a valid value in many contexts, which creates ambiguity. And `dict | None` still tells callers nothing about *why* the operation failed.
 
-### The resolute philosophy
+### The explicit-result philosophy
 
 `resolute` is built on three ideas:
 
@@ -660,7 +660,7 @@ It also means `Nothing == Nothing` is always True, and `Nothing is Nothing` is a
 
 ## Do-Notation
 
-Unlike some other libraries, `resolute`'s do-notation **fully supports branching logic** (if/else), loops, and early returns, as it leverages standard Python generators.
+Unlike some other libraries, `explicit-result`'s do-notation **fully supports branching logic** (if/else), loops, and early returns, as it leverages standard Python generators.
 
 > [!IMPORTANT]
 > **Safety Guard (v0.3.1)**: If you use `yield` inside a function but forget the `@do` or `@do_option` decorator, Resolute will issue a `RuntimeWarning` at runtime to prevent you from accidentally returning a silent generator object.
