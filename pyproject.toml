@@ -28,10 +28,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/chukwunwike/explicit_result"
-Repository = "https://github.com/chukwunwike/explicit_result"
-Documentation = "https://github.com/chukwunwike/explicit_result#readme"
-Issues = "https://github.com/chukwunwike/explicit_result/issues"
+Homepage = "https://github.com/chukwunwike/explicit-result"
+Repository = "https://github.com/chukwunwike/explicit-result"
+Documentation = "https://github.com/chukwunwike/explicit-result#readme"
+Issues = "https://github.com/chukwunwike/explicit-result/issues"
 
 [project.optional-dependencies]
 dev = [
