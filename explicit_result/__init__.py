@@ -11,13 +11,46 @@ Key Features:
 - Transparent exception wrapping with @safe and @safe_async.
 - Configurable error visibility and full Pydantic v2 support.
 
-Usage:
-    >>> from explicit_result import Ok, Err, Result
-    >>> def parse_int(s: str) -> Result[int, str]:
-    ...     try:
-    ...         return Ok(int(s))
-    ...     except ValueError:
-    ...         return Err(f"Not a number: {s}")
+---
+
+Zero dependencies. Fully typed. Python 3.9+.
+
+    from explicit_result import Ok, Err, Result, Some, Nothing, Option
+    from explicit_result import safe, safe_async
+    from explicit_result import collect, collect_all, partition, transpose
+
+Quick start:
+
+    def divide(a: float, b: float) -> Result[float, str]:
+        if b == 0:
+            return Err("division by zero")
+        return Ok(a / b)
+
+    result = divide(10, 2)
+    print(result)           # Ok(5.0)
+
+    value = result.unwrap_or(0.0)
+    print(value)            # 5.0
+
+    result.map(lambda x: x * 2)       # Ok(10.0)
+    result.and_then(lambda x: Ok(x))  # Ok(5.0)
+
+Safe decorator:
+
+    @safe(catch=ValueError)
+    def parse(s: str) -> int:
+        return int(s)
+
+    parse("42")   # Ok(42)
+    parse("abc")  # Err(ValueError(...))
+
+Pattern matching (Python 3.10+):
+
+    match result:
+        case Ok(value):
+            print(f"Success: {value}")
+        case Err(error):
+            print(f"Failed: {error}")
 """
 
 # Core types
